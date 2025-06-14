@@ -5,8 +5,10 @@ body {
 }
 
 .container {
-    width: 100%;
-    overflow-x: auto;
+    width: 500px;
+    overflow-x: hidden;
+    border: 2px solid #ccc;
+    margin: 0 auto;
 }
 
 .items {
@@ -16,6 +18,9 @@ body {
     width: max-content;
     cursor: grab;
     user-select: none;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .items:active {
@@ -33,4 +38,5 @@ body {
     border-radius: 8px;
     font-size: 1.2rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
 }
