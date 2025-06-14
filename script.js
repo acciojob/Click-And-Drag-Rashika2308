@@ -1,34 +1,66 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const itemsContainer = document.querySelector('.items');
-    let isDragging = false;
-    let startX;
-    let scrollLeft;
-    let startScrollLeft;
+    const container = document.getElementById('container');
+    const cubes = document.querySelectorAll('.cube');
+    const cubeSize = 80;
+    const gap = 20;
+    const cols = 3;
 
-    itemsContainer.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        startX = e.pageX - itemsContainer.offsetLeft;
-        startScrollLeft = itemsContainer.scrollLeft;
-        itemsContainer.style.cursor = 'grabbing';
-        itemsContainer.style.scrollBehavior = 'auto'; // Disable smooth scrolling during drag
+    // Initialize grid layout
+    function initializeCubes() {
+        cubes.forEach((cube, index) => {
+            const row = Math.floor(index / cols);
+            const col = index % cols;
+            cube.style.left = `${col * (cubeSize + gap)}px`;
+            cube.style.top = `${row * (cubeSize + gap)}px`;
+        });
+    }
+
+    initializeCubes();
+
+    // Drag mechanics
+    let draggedCube = null;
+    let offsetX, offsetY;
+
+    cubes.forEach(cube => {
+        cube.addEventListener('mousedown', startDrag);
     });
 
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-        itemsContainer.style.cursor = 'grab';
-        itemsContainer.style.scrollBehavior = 'smooth';
-    });
+    function startDrag(e) {
+        draggedCube = e.target;
+        draggedCube.classList.add('dragging');
+        
+        const rect = draggedCube.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+    }
 
-    document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        const x = e.pageX - itemsContainer.offsetLeft;
-        const walk = (x - startX) * 2; // Scroll multiplier
-        itemsContainer.scrollLeft = startScrollLeft - walk;
-    });
+    function drag(e) {
+        if (!draggedCube) return;
+        
+        const containerRect = container.getBoundingClientRect();
+        const maxX = containerRect.width - draggedCube.offsetWidth;
+        const maxY = containerRect.height - draggedCube.offsetHeight;
+        
+        // Calculate new position with boundaries
+        let newX = e.clientX - containerRect.left - offsetX;
+        let newY = e.clientY - containerRect.top - offsetY;
+        
+        // Apply constraints
+        newX = Math.max(0, Math.min(newX, maxX));
+        newY = Math.max(0, Math.min(newY, maxY));
+        
+        draggedCube.style.left = `${newX}px`;
+        draggedCube.style.top = `${newY}px`;
+    }
 
-    // Prevent default drag behavior
-    itemsContainer.addEventListener('dragstart', (e) => {
-        e.preventDefault();
-    });
+    function stopDrag() {
+        if (!draggedCube) return;
+        draggedCube.classList.remove('dragging');
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', stopDrag);
+        draggedCube = null;
+    }
 });
